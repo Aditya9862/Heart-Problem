@@ -1,0 +1,255 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Predictor</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px 15px;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 760px;
+            margin: auto;
+            padding: 30px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            text-align: center;
+            color: #b91c1c;
+        }
+
+        .subtitle {
+            margin-bottom: 25px;
+            text-align: center;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: white;
+            font-size: 15px;
+        }
+
+        input:focus, select:focus {
+            outline: 2px solid #fecaca;
+            border-color: #dc2626;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #dc2626;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #b91c1c;
+        }
+
+        .result, .error, .notice {
+            margin-top: 22px;
+            padding: 16px;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        .result {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .no-disease {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .error {
+            background: #fff1f2;
+            color: #be123c;
+        }
+
+        .notice {
+            background: #fffbeb;
+            color: #92400e;
+            font-size: 13px;
+        }
+
+        .result h2 {
+            margin-top: 0;
+        }
+
+        @media (max-width: 550px) {
+            .container {
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <h1>❤️ Heart Disease Predictor</h1>
+
+        <p class="subtitle">
+            Enter the patient details to generate a machine-learning prediction.
+        </p>
+
+        {% if model_error %}
+            <div class="error">
+                The model could not be loaded. Check that
+                <strong>heart_model1.joblib</strong> exists and was saved
+                using compatible Python and scikit-learn versions.
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            <div class="form-grid">
+                <div>
+                    <label for="age">Age (years)</label>
+                    <input id="age" type="number" name="age"
+                           min="1" max="120" required
+                           value="{{ form_data.get('age', 55) }}">
+                </div>
+
+                <div>
+                    <label for="sex">Sex</label>
+                    <select id="sex" name="sex" required>
+                        <option value="1"
+                            {% if form_data.get('sex', 1) == 1 %}selected{% endif %}>
+                            Male (1)
+                        </option>
+                        <option value="0"
+                            {% if form_data.get('sex') == 0 %}selected{% endif %}>
+                            Female (0)
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="cp">Chest pain type</label>
+                    <select id="cp" name="cp" required>
+                        {% for value in range(4) %}
+                        <option value="{{ value }}"
+                            {% if form_data.get('cp', 1) == value %}selected{% endif %}>
+                            {{ value }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="trestbps">Resting blood pressure (mm Hg)</label>
+                    <input id="trestbps" type="number" name="trestbps"
+                           min="0" max="300" required
+                           value="{{ form_data.get('trestbps', 130) }}">
+                </div>
+
+                <div>
+                    <label for="chol">Cholesterol (mg/dl)</label>
+                    <input id="chol" type="number" name="chol"
+                           min="0" max="1000" required
+                           value="{{ form_data.get('chol', 250) }}">
+                </div>
+
+                <div>
+                    <label for="thalach">Maximum heart rate achieved</label>
+                    <input id="thalach" type="number" name="thalach"
+                           min="0" max="300" required
+                           value="{{ form_data.get('thalach', 150) }}">
+                </div>
+
+                <div>
+                    <label for="exang">Exercise-induced angina</label>
+                    <select id="exang" name="exang" required>
+                        <option value="0"
+                            {% if form_data.get('exang', 0) == 0 %}selected{% endif %}>
+                            No (0)
+                        </option>
+                        <option value="1"
+                            {% if form_data.get('exang') == 1 %}selected{% endif %}>
+                            Yes (1)
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="oldpeak">ST depression (oldpeak)</label>
+                    <input id="oldpeak" type="number" name="oldpeak"
+                           min="-10" max="20" step="0.1" required
+                           value="{{ form_data.get('oldpeak', 1.0) }}">
+                </div>
+            </div>
+
+            <button type="submit">Predict Heart Disease</button>
+        </form>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if prediction %}
+            <div class="result {% if prediction == 'No heart disease detected by the model' %}no-disease{% endif %}">
+                <h2>Prediction Result</h2>
+                <strong>{{ prediction }}</strong>
+
+                {% if probability is not none %}
+                    <p>
+                        Model-estimated probability for class 1:
+                        <strong>{{ probability }}%</strong>
+                    </p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <div class="notice">
+            <strong>Disclaimer:</strong> This project is for educational
+            purposes only. Its output is not a medical diagnosis, and the
+            displayed probability is not necessarily a person's clinical risk.
+            Consult a qualified healthcare professional for medical concerns.
+        </div>
+    </main>
+</body>
+</html>
